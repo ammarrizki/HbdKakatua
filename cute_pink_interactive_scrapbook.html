@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Happy Birthday! 🎀 | Cute Pink Scrapbook</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --pink-pastel: #FFF0F5;
+      --pink-light: #FFB6C1;
+      --pink-mid: #FF69B4;
+      --pink-hot: #FF1493;
+      --pink-dark: #C71585;
+      --rose-gold: #B76E79;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Quicksand', sans-serif;
+      background-color: var(--pink-pastel);
+      color: #333;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .font-serif-title { font-family: 'Playfair Display', serif; }
+    .font-script-title { font-family: 'Great Vibes', cursive; }
+    .font-handwriting { font-family: 'Caveat', cursive; }
+
+    .pink-text-glow {
+      color: var(--pink-hot);
+      text-shadow: 0 0 15px rgba(255, 105, 180, 0.4), 0 0 30px rgba(255, 20, 147, 0.2);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 25px 50px rgba(255, 105, 180, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.5);
+      border-radius: 30px;
+    }
+
+    .paper-texture {
+      background-color: #FFFDF7;
+      background-image: radial-gradient(var(--pink-light) 1px, transparent 1px);
+      background-size: 15px 15px;
+      box-shadow: inset 0 0 40px rgba(255,105,180,0.05), 0 15px 35px rgba(255,20,147,0.15);
+      border-radius: 20px;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scale(0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 2rem 1rem;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    .screen::-webkit-scrollbar { display: none; }
+    .screen { -ms-overflow-style: none; scrollbar-width: none; }
+
+    #screen-envelope { justify-content: center; padding: 0; }
+
+    @keyframes envelopeFlapOpen {
+      0% { transform: rotateX(0deg); z-index: 20; }
+      100% { transform: rotateX(-180deg); z-index: 5; }
+    }
+    .flap-open {
+      animation: envelopeFlapOpen 0.8s forwards ease-in-out;
+      transform-origin: top;
+    }
+
+    @keyframes letterSlideUp {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-110%); z-index: 15; }
+    }
+    .letter-slide {
+      animation: letterSlideUp 1s 0.6s forwards ease-in-out;
+    }
+
+    @keyframes spinVinyl {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-active { animation: spinVinyl 4s linear infinite; }
+
+    @keyframes slowSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-dahlia {
+      animation: slowSpin 40s linear infinite;
+    }
+
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+      will-change: transform;
+    }
+    .tilt-inner {
+      transform: translateZ(40px);
+    }
+
+    .draggable {
+      cursor: grab;
+      position: absolute;
+      transition: box-shadow 0.2s, transform 0.1s;
+      touch-action: none;
+    }
+    .draggable:active {
+      cursor: grabbing;
+      box-shadow: 0 20px 40px rgba(255,105,180,0.3);
+    }
+
+    .glow-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glow-hover:hover {
+      transform: translateY(-10px) scale(1.08) rotate(0deg) !important;
+      box-shadow: 0 15px 35px rgba(255, 105, 180, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.8);
+      z-index: 40;
+    }
+
+    #parallax-bg {
+      position: fixed;
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      background: radial-gradient(circle at center, #FFFFFF 0%, var(--pink-pastel) 30%, var(--pink-light) 80%, var(--pink-mid) 120%);
+      z-index: -2;
+      transition: transform 0.1s ease-out;
+      pointer-events: none;
+    }
+    #parallax-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.8) 2px, transparent 2px);
+      background-size: 30px 30px;
+      opacity: 0.6;
+    }
+
+    #cursor-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @media (max-width: 640px) {
+      .font-script-title { font-size: 3.5rem !important; line-height: 1.1; }
+      #screen-message .font-handwriting { font-size: 1.5rem !important; }
+      .glass-panel { height: 95vh; width: 95vw; }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+  <!-- File audio lokal yang diputar -->
+  <audio id="bg-music" src="Aku Milikmu.mp3" loop preload="auto"></audio>
+
+  <div id="parallax-bg"></div>
+  <canvas id="cursor-canvas" class="hidden md:block"></canvas>
+
+  <main class="relative z-10 w-[95vw] md:w-[90vw] max-w-6xl h-[95vh] md:h-[85vh] glass-panel overflow-hidden flex flex-col">
+    
+    <!-- Header -->
+    <header class="w-full px-4 md:px-8 py-4 border-b-2 border-white/60 flex items-center justify-between bg-white/30 z-50 rounded-t-[30px] shrink-0">
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-[0_0_10px_#FF69B4]"></div>
+        <span class="font-serif-title tracking-[0.1em] md:tracking-[0.2em] text-pink-600 uppercase text-xs md:text-sm font-bold flex items-center gap-1 md:gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>For My Kaka tua
+        </span>
+      </div>
+      <div class="flex items-center">
+        <span class="font-quicksand font-bold text-xs md:text-sm text-pink-500 bg-white/50 px-3 md:px-4 py-1 rounded-full border border-pink-200 text-center">
+          I Love You 7🎀
+        </span>
+      </div>
+    </header>
+
+    <div class="relative flex-1 w-full h-full overflow-hidden">
+
+      <!-- SCREEN 1: ENVELOPE -->
+      <section id="screen-envelope" class="screen active">
+        <div class="space-y-2 md:space-y-4 mb-8 md:mb-12 text-center transform transition-transform duration-500 hover:scale-105 px-4">
+          <p class="font-serif-title text-xs md:text-sm tracking-[0.2em] md:tracking-[0.4em] uppercase text-pink-600 font-bold">Cut humairah Rizky ramadhan</p>
+          <h1 class="font-script-title text-5xl md:text-7xl lg:text-8xl pink-text-glow">Happy Birthday</h1>
+        </div>
+
+        <div class="relative cursor-pointer group" onclick="openEnvelope()">
+          <div class="relative w-[85vw] max-w-[450px] h-[200px] md:h-[280px] bg-gradient-to-b from-pink-300 to-pink-400 rounded-2xl shadow-[0_20px_40px_rgba(255,105,180,0.3)] border-2 border-white/50 flex items-center justify-center transition-all duration-500 md:group-hover:scale-110 md:group-hover:shadow-[0_30px_60px_rgba(255,20,147,0.4)] hover:-translate-y-4">
+            
+            <div id="envelope-letter" class="absolute w-[90%] h-[85%] bg-[#FFFDF7] rounded-xl p-4 md:p-6 shadow-md flex flex-col items-center justify-center transition-all duration-700 top-2 z-0 border-2 border-pink-100">
+              <i data-lucide="heart" class="w-8 h-8 md:w-12 md:h-12 text-pink-500 fill-pink-400 animate-pulse mb-2 md:mb-3"></i>
+              <p class="font-script-title text-3xl md:text-5xl text-pink-600">For Kaka Tua</p>
+            </div>
+
+            <div class="absolute inset-0 z-10 pointer-events-none rounded-2xl overflow-hidden">
+              <div class="absolute bottom-0 inset-x-0 h-1/2 bg-pink-400 border-t-2 border-white/30" style="clip-path: polygon(0 100%, 50% 15%, 100% 100%);"></div>
+              <div class="absolute left-0 inset-y-0 w-1/2 bg-pink-300 border-r border-white/20" style="clip-path: polygon(0 0, 85% 50%, 0 100%);"></div>
+              <div class="absolute right-0 inset-y-0 w-1/2 bg-pink-300 border-l border-white/20" style="clip-path: polygon(100% 0, 15% 50%, 100% 100%);"></div>
+            </div>
+
+            <div id="envelope-flap" class="absolute top-0 inset-x-0 h-1/2 bg-pink-400 border-b-2 border-white/40 rounded-t-2xl z-20 transition-all origin-top" style="clip-path: polygon(0 0, 100% 0, 50% 100%);"></div>
+
+            <div id="wax-seal" class="z-30 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-pink-200 via-pink-400 to-pink-600 rounded-full shadow-[0_10px_25px_rgba(255,20,147,0.6)] border-4 border-white flex items-center justify-center group-hover:scale-125 transition-transform duration-300">
+              <div class="w-10 h-10 md:w-16 md:h-16 rounded-full border-2 border-pink-100/50 bg-gradient-to-tr from-pink-500 to-pink-300 flex items-center justify-center shadow-inner">
+                <i data-lucide="heart" class="w-5 h-5 md:w-8 md:h-8 text-white drop-shadow-md fill-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-10 md:mt-14 text-pink-600 font-quicksand font-bold tracking-wide animate-bounce bg-white/50 px-4 md:px-6 py-2 rounded-full border border-pink-200 text-sm md:text-base">
+          Tekan Ditengah Gaesss🎀
+        </p>
+      </section>
+
+      <!-- SCREEN 2: MENU -->
+      <section id="screen-menu" class="screen pb-10">
+        <div class="text-center mb-8 md:mb-10 pt-4">
+          <p class="font-serif-title text-xs md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase text-pink-500 font-bold mb-2">Explore the Gifts</p>
+          <h2 class="font-script-title text-5xl md:text-7xl pink-text-glow">These are for you</h2>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6 md:gap-10 justify-center items-center w-full max-w-5xl pb-10">
+          
+          <div class="tilt-card w-[80vw] max-w-[288px] h-64 md:h-96 bg-white/70 border-2 border-pink-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group shadow-xl hover:border-pink-400 hover:shadow-[0_0_40px_rgba(255,105,180,0.5)] backdrop-blur-sm" onclick="navTo('screen-message')">
+            <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-pink-300 to-pink-500"></div>
+            <div class="tilt-inner relative z-10 flex flex-col items-center pointer-events-none">
+              <div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 border-4 border-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                <i data-lucide="mail-open" class="w-8 h-8 md:w-10 md:h-10 text-pink-500"></i>
+              </div>
+              <h3 class="font-serif-title text-2xl md:text-3xl text-pink-600 font-bold mt-4 md:mt-6">Surat gweh</h3>
+              <p class="text-xs md:text-sm text-pink-400 mt-1 md:mt-2 font-handwriting text-xl md:text-2xl">Surat for kaka akuuu💌</p>
+            </div>
+          </div>
+
+          <div class="tilt-card w-[80vw] max-w-[288px] h-64 md:h-96 bg-white/70 border-2 border-pink-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group shadow-xl hover:border-pink-400 hover:shadow-[0_0_40px_rgba(255,105,180,0.5)] backdrop-blur-sm" onclick="navTo('screen-flower')">
+            <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-pink-300 to-pink-500"></div>
+            <div class="tilt-inner relative z-10 flex flex-col items-center pointer-events-none">
+              <div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 border-4 border-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                <i data-lucide="flower-2" class="w-8 h-8 md:w-10 md:h-10 text-pink-500"></i>
+              </div>
+              <h3 class="font-serif-title text-2xl md:text-3xl text-pink-600 font-bold mt-4 md:mt-6">Kaka Tua</h3>
+              <p class="text-xs md:text-sm text-pink-400 mt-1 md:mt-2 font-handwriting text-xl md:text-2xl">My Delilah 🌸</p>
+            </div>
+          </div>
+
+          <div class="tilt-card w-[80vw] max-w-[288px] h-64 md:h-96 bg-white/70 border-2 border-pink-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group shadow-xl hover:border-pink-400 hover:shadow-[0_0_40px_rgba(255,105,180,0.5)] backdrop-blur-sm" onclick="navTo('screen-cake')">
+            <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-pink-300 to-pink-500"></div>
+            <div class="tilt-inner relative z-10 flex flex-col items-center pointer-events-none">
+              <div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 border-4 border-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                <i data-lucide="music" class="w-8 h-8 md:w-10 md:h-10 text-pink-500"></i>
+              </div>
+              <h3 class="font-serif-title text-2xl md:text-3xl text-pink-600 font-bold mt-4 md:mt-6">Music For U</h3>
+              <p class="text-xs md:text-sm text-pink-400 mt-1 md:mt-2 font-handwriting text-xl md:text-2xl">song kaka gweh🎵</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SCREEN 3: MESSAGE -->
+      <section id="screen-message" class="screen">
+        <button onclick="navTo('screen-menu')" class="sticky md:absolute top-2 md:top-6 left-2 md:left-8 flex items-center gap-2 text-pink-500 hover:text-pink-700 transition-colors group z-50 bg-white/90 px-4 md:px-5 py-2 rounded-full border-2 border-pink-200 shadow-sm font-bold self-start md:self-auto mb-4 md:mb-0">
+          <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform"></i>
+          <span class="text-sm md:text-base">Back</span>
+        </button>
+
+<div class="w-full flex-1 relative flex flex-col md:flex-row md:items-center justify-start md:justify-center px-2 md:px-12 pt-20 pb-32 md:py-0 overflow-visible min-h-max">
+  
+  <div class="w-[95%] md:w-full max-w-[650px] paper-texture p-6 md:p-12 shadow-[0_20px_50px_rgba(255,20,147,0.1)] border-2 border-pink-200 text-gray-800 z-10 pointer-events-none relative mx-auto mb-10 md:my-auto shrink-0 mt-4 md:mt-0">
+            <h3 class="font-serif-title text-xl md:text-2xl text-pink-600 border-b-2 border-pink-200/50 pb-3 md:pb-4 mb-4 md:mb-6 uppercase tracking-widest text-center font-bold">To My Favorite Person 🎀</h3>
+            <div class="font-handwriting text-2xl md:text-4xl leading-relaxed text-gray-700 space-y-4">
+              <p>Happy Birthday kakaaa sayangg. aing sebagai adik kamu yang manis ingin mengucapkan hbd buat kaka tersayang aku yaaa</p>
+              <p>Mungkin aku bukan orang paling lama yang ada di sisi kamu, tapi aku akan menjaga sayang hingga tahun berikutnya. Aku harap kita selamanyaa.. 💖✨</p>
+              <p>- Your Berondong</p>
+            </div>
+          </div>
+
+          <div id="drag-container" class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <div class="draggable pointer-events-auto bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl shadow-lg border border-pink-100 w-[140px] md:w-[230px]" style="left: 5%; top: 5%; transform: rotate(-8deg);">
+              <img src="gambar (1).jpeg" class="w-full h-24 md:h-44 object-cover rounded pointer-events-none" alt="Memories">
+              <p class="font-handwriting text-lg md:text-2xl text-center text-pink-500 mt-2 md:mt-3 pointer-events-none font-bold">My Kaka</p>
+            </div>
+            
+            <div class="draggable pointer-events-auto bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl shadow-lg border border-pink-100 w-[140px] md:w-[230px]" style="left: 60%; top: 2%; transform: rotate(12deg);">
+              <img src="gambar (11).jpeg" class="w-full h-24 md:h-44 object-cover rounded pointer-events-none" alt="Memories">
+              <p class="font-handwriting text-lg md:text-2xl text-center text-pink-500 mt-2 md:mt-3 pointer-events-none font-bold">My Kaka</p>
+            </div>
+            
+            <div class="draggable pointer-events-auto bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl shadow-lg border border-pink-100 w-[140px] md:w-[230px]" style="left: 10%; top: 75%; transform: rotate(6deg);">
+              <img src="gambar (9).jpeg" class="w-full h-24 md:h-44 object-cover rounded pointer-events-none" alt="Memories">
+              <p class="font-handwriting text-lg md:text-2xl text-center text-pink-500 mt-2 md:mt-3 pointer-events-none font-bold">My Kaka</p>
+            </div>
+            
+            <div class="draggable pointer-events-auto bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl shadow-lg border border-pink-100 w-[140px] md:w-[230px]" style="left: 55%; top: 70%; transform: rotate(-10deg);">
+              <img src="gambar (8).jpeg" class="w-full h-24 md:h-44 object-cover rounded pointer-events-none" alt="Memories">
+              <p class="font-handwriting text-lg md:text-2xl text-center text-pink-500 mt-2 md:mt-3 pointer-events-none font-bold">My Kaka</p>
+            </div>
+          </div>
+          
+          <p class="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 font-quicksand font-bold text-pink-500 bg-white/80 px-4 md:px-6 py-2 md:py-3 rounded-full border-2 border-pink-200 shadow-md text-xs md:text-sm animate-bounce whitespace-nowrap z-20">
+            Tip: Drag the photos! 🎀
+          </p>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: FLOWER -->
+      <section id="screen-flower" class="screen">
+        <button onclick="navTo('screen-menu')" class="sticky md:absolute top-2 md:top-6 left-2 md:left-8 flex items-center gap-2 text-pink-500 hover:text-pink-700 transition-colors group z-50 bg-white/90 px-4 md:px-5 py-2 rounded-full border-2 border-pink-200 shadow-sm font-bold self-start md:self-auto mb-4 md:mb-0">
+          <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform"></i>
+          <span class="text-sm md:text-base">Back</span>
+        </button>
+
+        <div class="relative w-full flex-1 flex flex-col items-center justify-center pb-20 md:pb-0">
+          <div class="z-10 text-center flex flex-col items-center my-10 md:my-0">
+            <div class="relative w-56 h-56 md:w-80 md:h-80 flex items-center justify-center drop-shadow-[0_0_40px_rgba(255,105,180,0.5)]">
+              <svg viewBox="0 0 200 200" class="w-full h-full spin-dahlia">
+                <defs>
+                  <path id="petal" d="M100,100 C115,60 110,20 100,5 C90,20 85,60 100,100" />
+                  <radialGradient id="pink-grad-outer" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#FF1493" />
+                    <stop offset="100%" stop-color="#FF69B4" />
+                  </radialGradient>
+                  <radialGradient id="pink-grad-mid" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#C71585" />
+                    <stop offset="100%" stop-color="#FF1493" />
+                  </radialGradient>
+                  <radialGradient id="pink-grad-inner" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#FFB6C1" />
+                    <stop offset="100%" stop-color="#FFF0F5" />
+                  </radialGradient>
+                </defs>
+                <g fill="url(#pink-grad-outer)" stroke="#FFF" stroke-width="0.5">
+                  <use href="#petal" transform="rotate(0 100 100)" /><use href="#petal" transform="rotate(30 100 100)" /><use href="#petal" transform="rotate(60 100 100)" /><use href="#petal" transform="rotate(90 100 100)" /><use href="#petal" transform="rotate(120 100 100)" /><use href="#petal" transform="rotate(150 100 100)" /><use href="#petal" transform="rotate(180 100 100)" /><use href="#petal" transform="rotate(210 100 100)" /><use href="#petal" transform="rotate(240 100 100)" /><use href="#petal" transform="rotate(270 100 100)" /><use href="#petal" transform="rotate(300 100 100)" /><use href="#petal" transform="rotate(330 100 100)" />
+                </g>
+                <g fill="url(#pink-grad-mid)" stroke="#FFF" stroke-width="0.5" transform="scale(0.8) translate(25 25)">
+                  <use href="#petal" transform="rotate(15 100 100)" /><use href="#petal" transform="rotate(45 100 100)" /><use href="#petal" transform="rotate(75 100 100)" /><use href="#petal" transform="rotate(105 100 100)" /><use href="#petal" transform="rotate(135 100 100)" /><use href="#petal" transform="rotate(165 100 100)" /><use href="#petal" transform="rotate(195 100 100)" /><use href="#petal" transform="rotate(225 100 100)" /><use href="#petal" transform="rotate(255 100 100)" /><use href="#petal" transform="rotate(285 100 100)" /><use href="#petal" transform="rotate(315 100 100)" /><use href="#petal" transform="rotate(345 100 100)" />
+                </g>
+                <g fill="url(#pink-grad-inner)" stroke="#FF69B4" stroke-width="0.5" transform="scale(0.55) translate(41 41)">
+                  <use href="#petal" transform="rotate(7.5 100 100)" /><use href="#petal" transform="rotate(37.5 100 100)" /><use href="#petal" transform="rotate(67.5 100 100)" /><use href="#petal" transform="rotate(97.5 100 100)" /><use href="#petal" transform="rotate(127.5 100 100)" /><use href="#petal" transform="rotate(157.5 100 100)" /><use href="#petal" transform="rotate(187.5 100 100)" /><use href="#petal" transform="rotate(217.5 100 100)" /><use href="#petal" transform="rotate(247.5 100 100)" /><use href="#petal" transform="rotate(277.5 100 100)" /><use href="#petal" transform="rotate(307.5 100 100)" /><use href="#petal" transform="rotate(337.5 100 100)" />
+                </g>
+                <circle cx="100" cy="100" r="12" fill="#FFD700" stroke="#FFF" stroke-width="2" />
+                <circle cx="100" cy="100" r="8" fill="#FFF8DC" />
+              </svg>
+            </div>
+            <h3 class="font-script-title text-5xl md:text-7xl pink-text-glow mt-4 font-bold tracking-wider"> My Delilah</h3>
+          </div>
+
+          <div class="w-full flex flex-wrap justify-center gap-4 mt-6 md:absolute md:inset-0 md:pointer-events-none md:mt-0 z-0">
+            <div class="glow-hover md:pointer-events-auto md:absolute md:top-[18%] md:left-[10%] paper-texture text-pink-700 p-4 md:p-5 rounded-2xl w-40 md:w-56 shadow-lg border-2 border-pink-200 transform md:-rotate-6 cursor-help flex flex-col items-center text-center">
+              <i data-lucide="sparkles" class="w-5 h-5 md:w-6 md:h-6 text-pink-400 mb-1 md:mb-2"></i>
+              <p class="font-handwriting text-xl md:text-3xl leading-tight font-bold">"You are strong. 💪"</p>
+            </div>
+
+            <div class="glow-hover md:pointer-events-auto md:absolute md:top-[15%] md:right-[10%] paper-texture text-pink-700 p-4 md:p-5 rounded-2xl w-40 md:w-60 shadow-lg border-2 border-pink-200 transform md:rotate-3 cursor-help flex flex-col items-center text-center">
+              <i data-lucide="heart" class="w-5 h-5 md:w-6 md:h-6 text-pink-400 mb-1 md:mb-2"></i>
+              <p class="font-handwriting text-xl md:text-3xl leading-tight font-bold">"You are Beautiful. 💖"</p>
+            </div>
+
+            <div class="glow-hover md:pointer-events-auto md:absolute md:bottom-[22%] md:left-[15%] paper-texture text-pink-700 p-4 md:p-5 rounded-2xl w-40 md:w-56 shadow-lg border-2 border-pink-200 transform md:rotate-6 cursor-help flex flex-col items-center text-center">
+              <i data-lucide="star" class="w-5 h-5 md:w-6 md:h-6 text-pink-400 mb-1 md:mb-2"></i>
+              <p class="font-handwriting text-xl md:text-3xl leading-tight font-bold">"You are unique. 🌟"</p>
+            </div>
+
+            <div class="glow-hover md:pointer-events-auto md:absolute md:bottom-[18%] md:right-[12%] paper-texture text-pink-700 p-4 md:p-5 rounded-2xl w-40 md:w-64 shadow-lg border-2 border-pink-200 transform md:-rotate-3 cursor-help flex flex-col items-center text-center">
+              <i data-lucide="flower" class="w-5 h-5 md:w-6 md:h-6 text-pink-400 mb-1 md:mb-2"></i>
+              <p class="font-handwriting text-xl md:text-3xl leading-tight font-bold">"You are My 7 minute. 🌸"</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: CAKE & MUSIC -->
+      <section id="screen-cake" class="screen">
+        <button onclick="navTo('screen-menu')" class="sticky md:absolute top-2 md:top-6 left-2 md:left-8 flex items-center gap-2 text-pink-500 hover:text-pink-700 transition-colors group z-50 bg-white/90 px-4 md:px-5 py-2 rounded-full border-2 border-pink-200 shadow-sm font-bold self-start md:self-auto mb-4 md:mb-0">
+          <i data-lucide="arrow-left" class="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform"></i>
+          <span class="text-sm md:text-base">Back</span>
+        </button>
+
+        <div class="w-full flex-1 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24 py-8 md:py-0 pb-20">
+          
+          <div class="relative w-64 md:w-80 h-[20rem] md:h-[26rem] bg-white p-3 md:p-4 pb-10 md:pb-14 rounded-2xl shadow-[0_20px_50px_rgba(255,105,180,0.3)] transform -rotate-3 border-2 border-pink-100 group hover:rotate-0 transition-all duration-500 hover:scale-105 shrink-0">
+            <img src="gambar (6).jpeg" class="w-full h-full object-cover rounded-xl border border-pink-50" alt="Birthday Cake">
+            <div class="absolute bottom-2 md:bottom-4 inset-x-0 text-center">
+              <p class="font-handwriting text-3xl md:text-4xl text-pink-600 font-bold">Make a wish! 🎂</p>
+            </div>
+            <div class="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2 w-20 md:w-28 h-8 md:h-10 bg-pink-300/60 backdrop-blur-md border border-pink-200/50 shadow-sm rotate-2 flex items-center justify-center overflow-hidden">
+               <div class="w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.3) 5px, rgba(255,255,255,0.3) 10px);"></div>
+            </div>
+          </div>
+
+          <!-- Vinyl Player Area -->
+          <div class="flex flex-col items-center shrink-0">
+            <div id="vinyl-turntable" class="relative w-64 h-64 md:w-80 md:h-80 rounded-2xl bg-pink-50 border-4 border-white shadow-[0_20px_40px_rgba(255,105,180,0.2)] flex items-center justify-center group cursor-pointer" 
+                 onmouseenter="startVinyl()" 
+                 onmouseleave="stopVinyl()"
+                 onclick="toggleVinylClick()">
+              
+              <div class="absolute inset-3 md:inset-4 rounded-full bg-pink-100 border-2 border-pink-200 shadow-inner"></div>
+
+              <div id="vinyl-disc" class="relative w-52 h-52 md:w-64 md:h-64 bg-pink-400 rounded-full shadow-2xl flex items-center justify-center transition-transform duration-500 border-2 border-pink-500 overflow-hidden">
+                <div class="absolute inset-2 rounded-full border-2 border-pink-500/50"></div>
+                <div class="absolute inset-6 rounded-full border-2 border-pink-500/50"></div>
+                <div class="absolute inset-10 rounded-full border-2 border-pink-500/50"></div>
+                <div class="absolute inset-14 rounded-full border-2 border-pink-500/50"></div>
+                
+                <div class="w-16 h-16 md:w-24 md:h-24 bg-white rounded-full border-4 border-pink-200 flex items-center justify-center flex-col shadow-inner z-10">
+                  <span class="font-script-title text-pink-300 text-xl md:text-3x2 font-bold">Aku Milikmu</span>
+                  <div class="w-3 h-3 md:w-4 md:h-4 bg-pink-100 rounded-full mt-1 border-2 border-pink-300 shadow-inner"></div>
+                </div>
+              </div>
+
+              <!-- Tone Arm -->
+              <div id="tonearm" class="absolute top-4 md:top-6 right-4 md:right-6 w-5 md:w-6 h-28 md:h-36 origin-top-right transition-transform duration-700 transform rotate-[-30deg]">
+                <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-[#E0BFB8] to-[#B76E79] border-2 border-white shadow-lg absolute -top-2 md:-top-3 -right-2 md:-right-3"></div>
+                <div class="w-2 md:w-3 h-24 md:h-32 bg-gradient-to-r from-[#E0BFB8] to-[#B76E79] absolute top-4 md:top-5 right-1 rounded-full shadow-md"></div>
+                <div class="w-4 h-6 md:w-5 md:h-8 bg-pink-300 absolute bottom-0 right-0 rounded-md shadow-xl transform rotate-12 border border-white"></div>
+              </div>
+            </div>
+            
+            <p class="mt-6 md:mt-10 font-quicksand font-bold text-pink-500 bg-white/80 px-4 md:px-6 py-2 md:py-3 rounded-full border-2 border-pink-200 shadow-md text-xs md:text-sm transition-colors duration-300 group-hover:bg-pink-100">
+              Tap the vinyl to play 🎵
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // 1. Mouse Parallax Effect
+    const bgLayer = document.getElementById('parallax-bg');
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2; 
+      const y = (e.clientY / window.innerHeight - 0.5) * 2; 
+      bgLayer.style.transform = `translate(${-x * 3}%, ${-y * 3}%)`;
+    });
+
+    // 2. Cute Emoji Cursor Trail (Canvas)
+    const canvas = document.getElementById('cursor-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const emojis = ['💖', '✨', '🌸', '🎀'];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    document.addEventListener('mousemove', (e) => {
+      if(window.innerWidth < 768) return;
+      if(Math.random() > 0.4) {
+        particles.push({
+          x: e.clientX,
+          y: e.clientY,
+          size: Math.random() * 15 + 15,
+          speedX: (Math.random() - 0.5) * 2,
+          speedY: (Math.random() - 0.5) * -2 - 1,
+          life: 1,
+          char: emojis[Math.floor(Math.random() * emojis.length)]
+        });
+      }
+    });
+
+    function animateCursor() {
+      if(window.innerWidth >= 768) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < particles.length; i++) {
+          let p = particles[i];
+          p.x += p.speedX;
+          p.y += p.speedY;
+          p.life -= 0.02;
+
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+            i--;
+            continue;
+          }
+
+          ctx.globalAlpha = p.life;
+          ctx.font = `${p.size}px Arial`;
+          ctx.fillText(p.char, p.x, p.y);
+        }
+        ctx.globalAlpha = 1;
+      }
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // 3. Screen Navigation Logic
+    function navTo(screenId) {
+      document.querySelectorAll('.screen').forEach(el => {
+        if (el.id === screenId) {
+          el.classList.add('active');
+          el.scrollTop = 0;
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+
+    // 4. Envelope Opening Animation & Confetti
+    function openEnvelope() {
+      const flap = document.getElementById('envelope-flap');
+      const letter = document.getElementById('envelope-letter');
+      
+      flap.classList.add('flap-open');
+      setTimeout(() => letter.classList.add('letter-slide'), 200);
+
+      if (window.confetti) {
+        confetti({
+          particleCount: window.innerWidth < 768 ? 80 : 150,
+          spread: 90,
+          origin: { y: 0.6 },
+          colors: ['#FFB6C1', '#FF69B4', '#FF1493', '#FFFFFF', '#FFC0CB'],
+          zIndex: 9999
+        });
+      }
+
+      setTimeout(() => navTo('screen-menu'), 1800);
+    }
+
+    // 5. 3D Tilt Card Logic
+    document.querySelectorAll('.tilt-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        if(window.innerWidth < 768) return;
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+        const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+        const rotX = -y * 15;
+        const rotY = x * 15;
+        card.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.05, 1.05, 1.05)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        if(window.innerWidth < 768) return;
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+      });
+    });
+
+    // 6. Draggable Polaroids Logic
+    let activeItem = null;
+    let initialX = 0, initialY = 0, currentX = 0, currentY = 0, xOffset = 0, yOffset = 0;
+    let zIndexCounter = 100;
+
+    function getEventX(e) { return e.type.includes('touch') ? e.touches[0].clientX : e.clientX; }
+    function getEventY(e) { return e.type.includes('touch') ? e.touches[0].clientY : e.clientY; }
+
+    function dragStart(e) {
+      const target = e.target.closest('.draggable');
+      if (target) {
+        activeItem = target;
+        activeItem.style.zIndex = zIndexCounter++;
+        
+        const style = window.getComputedStyle(activeItem);
+        let matrix = new WebKitCSSMatrix(style.transform);
+        xOffset = matrix.m41;
+        yOffset = matrix.m42;
+
+        initialX = getEventX(e) - xOffset;
+        initialY = getEventY(e) - yOffset;
+      }
+    }
+
+    function drag(e) {
+      if (activeItem) {
+        e.preventDefault();
+        currentX = getEventX(e) - initialX;
+        currentY = getEventY(e) - initialY;
+        
+        let rot = activeItem.style.transform.match(/rotate\((.*?)\)/);
+        let rotStr = rot ? rot[0] : 'rotate(0deg)';
+        
+        activeItem.style.transform = `translate(${currentX}px, ${currentY}px) ${rotStr}`;
+      }
+    }
+
+    function dragEnd() {
+      activeItem = null;
+    }
+
+    document.querySelectorAll('.draggable').forEach(item => {
+      item.addEventListener('mousedown', dragStart);
+      item.addEventListener('touchstart', dragStart, { passive: false });
+    });
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag, { passive: false });
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchend', dragEnd);
+
+    // 7. Vinyl Player Local Audio Control Logic
+    const bgMusic = document.getElementById('bg-music');
+    let isPlaying = false;
+    let clickedToLock = false; 
+
+    function toggleVinylClick() {
+      clickedToLock = !clickedToLock;
+      if (clickedToLock) {
+        startVinylLogic();
+      } else {
+        stopVinylLogic();
+      }
+    }
+
+    function startVinyl() {
+      if (clickedToLock || window.innerWidth < 768) return; 
+      startVinylLogic();
+    }
+
+    function stopVinyl() {
+      if (clickedToLock || window.innerWidth < 768) return; 
+      stopVinylLogic();
+    }
+
+    function startVinylLogic() {
+      if(isPlaying) return;
+      
+      const tonearm = document.getElementById('tonearm');
+      const disc = document.getElementById('vinyl-disc');
+      
+      bgMusic.play().then(() => {
+        isPlaying = true;
+        tonearm.style.transform = 'rotate(15deg)';
+        disc.classList.add('spin-active');
+      }).catch(err => {
+        console.warn("Autoplay dicegah oleh browser, silakan klik kembali:", err);
+      });
+    }
+
+    function stopVinylLogic() {
+      isPlaying = false;
+      const tonearm = document.getElementById('tonearm');
+      const disc = document.getElementById('vinyl-disc');
+      
+      tonearm.style.transform = 'rotate(-30deg)';
+      disc.classList.remove('spin-active');
+      bgMusic.pause();
+    }
+  </script>
+</body>
+</html>
